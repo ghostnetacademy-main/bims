@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card">
+  <h2>{{ title }}</h2>
+  <p class="muted">{{ rows|length }} record(s).</p>
+  <table>
+    <tr>{% for f,label in columns %}<th>{{ label }}</th>{% endfor %}</tr>
+    {% for row in rows %}
+    <tr>{% for f,label in columns %}<td>{{ row[f] }}</td>{% endfor %}</tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

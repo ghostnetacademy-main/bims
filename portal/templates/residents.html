@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card">
+  <h2>Residents Registry</h2>
+  <p class="muted">{{ rows|length }} record(s){% if q %} matching "{{ q }}"{% endif %}. Personal data — handle under the Data Privacy Act.</p>
+  <form class="search" method="get" action="{{ url_for('residents') }}">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search name, purok, occupation…">
+    <button type="submit">Search</button>
+  </form>
+  <table>
+    <tr><th>Name</th><th>Sex</th><th>Birthdate</th><th>Purok</th><th>Occupation</th><th>Contact</th><th>PhilSys</th><th></th></tr>
+    {% for r in rows %}
+    <tr>
+      <td><a class="rowlink" href="{{ url_for('resident_detail', rid=r['id']) }}">{{ r['last_name'] }}, {{ r['first_name'] }}</a></td>
+      <td>{{ r['sex'] }}</td>
+      <td>{{ r['birthdate'] }}</td>
+      <td>{{ r['purok'] }}</td>
+      <td>{{ r['occupation'] }}</td>
+      <td>{{ r['contact_no'] }}</td>
+      <td>{{ r['philsys_no'] }}</td>
+      <td>{% if r['senior'] %}<span class="pill" style="background:#fff3cd;color:#8a6d00">Senior</span>{% endif %}
+          {% if r['pwd'] %}<span class="pill" style="background:#e7f0ff;color:#1b4d8a">PWD</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

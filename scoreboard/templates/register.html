@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Register · {{ ck.event_title }}{% endblock %}
+{% block body %}
+<div class="card" style="max-width:480px; margin-left:auto; margin-right:auto;">
+  <h2>Register your team</h2>
+  <p class="muted">One registration per team. Share the team password with your teammates so they can sign in from their own laptops.</p>
+  <form method="post" autocomplete="off">
+    <label for="name">Team name</label>
+    <input id="name" type="text" name="name" maxlength="40" required placeholder="e.g. LGU Buenavista Red">
+    <label for="side">Side</label>
+    <select id="side" name="side">
+      <option value="red" {{ 'selected' if side_hint=='red' }}>Red (attack)</option>
+      <option value="blue" {{ 'selected' if side_hint=='blue' }}>Blue (defend)</option>
+    </select>
+    <label for="password">Team password (at least 6 characters)</label>
+    <input id="password" type="password" name="password" minlength="6" maxlength="128" required autocomplete="new-password">
+    <div style="margin-top:18px;"><button type="submit">Create team</button></div>
+  </form>
+  <p class="muted" style="margin-top:16px;">Team already registered? <a href="{{ url_for('login') }}">Sign in</a>.</p>
+</div>
+{% endblock %}

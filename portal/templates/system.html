@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card">
+  <h2>System &amp; Backups</h2>
+  <p class="muted">Administrative utilities for {{ brgy }} BIMS.</p>
+  <table style="max-width:680px">
+    <tr><th>System</th><td>Barangay Information Management System v2.3</td></tr>
+    <tr><th>Database</th><td>bims_malinaw (sqlite)</td></tr>
+    <tr><th>Config file</th><td><code>config.ini</code></td></tr>
+    <tr><th>Backups</th><td>nightly to <code>/srv/bims/backup</code></td></tr>
+  </table>
+  <h2 style="font-size:16px;margin-top:18px">Downloads</h2>
+  <p class="muted">Public forms are served from the downloads folder, e.g.
+     <a class="rowlink" href="{{ url_for('download') }}?file=forms/clearance-template.txt">clearance template</a>
+     (<code>/download?file=forms/clearance-template.txt</code>).</p>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Standings · {{ ck.event_title }}{% endblock %}
+{% block css %}
+    .winner { text-align:center; padding:34px 24px; border:1px solid #6b5416;
+              background:radial-gradient(ellipse at top,#3d300b 0%,var(--panel) 68%); }
+    .winner .tag { letter-spacing:3px; font-size:13px; color:var(--gold); text-transform:uppercase; }
+    .winner h1 { font-size:46px; margin:10px 0 6px; color:#ffe7a3; word-break:break-word; }
+    .winner .score { font-size:18px; }
+    .podium { display:flex; justify-content:center; gap:14px; margin-top:20px; flex-wrap:wrap; }
+    .podium div { background:#0e1530; border:1px solid var(--line); border-radius:10px; padding:12px 18px; min-width:200px; }
+    .podium small { display:block; color:var(--muted); font-size:12px; letter-spacing:1px; text-transform:uppercase; }
+    .podium b { font-size:17px; }
+    .bigclock { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:34px; color:var(--gold); }
+    tr.lead td { background:#18203c; }
+    td.rank { width:54px; font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--muted); }
+{% endblock %}
+{% block body %}
+{% if ck.phase == 'ended' %}
+<div class="card winner">
+  <div class="tag">Time is up</div>
+  {% if res.winner %}
+    <h1>{{ res.winner.name }}</h1>
+    <div class="score"><span class="{{ res.winner.side }}">{{ res.winner.side|upper }} TEAM</span>
+      wins with <b class="pts">{{ res.winner.points }}</b> points</div>
+    {% if res.tie %}<p class="muted">Tied on points; this team reached its score first.</p>{% endif %}
+    <div class="podium">
+      <div><small>Top Red team</small>
+        {% if res.best_red %}<b class="red">{{ res.best_red.name }}</b> · <span class="pts">{{ res.best_red.points }}</span>{% else %}<span class="muted">no points scored</span>{% endif %}</div>
+      <div><small>Top Blue team</small>
+        {% if res.best_blue %}<b class="blue">{{ res.best_blue.name }}</b> · <span class="pts">{{ res.best_blue.points }}</span>{% else %}<span class="muted">no points scored</span>{% endif %}</div>
+    </div>
+  {% else %}
+    <h1>No winner yet</h1>
+    <div class="muted">No team has scored any points.</div>
+  {% endif %}
+  {% if res.pending %}
+    <div class="notice" style="display:inline-block;">{{ res.pending }} Blue report{{ 's' if res.pending != 1 }} still waiting for the instructor. Results are provisional until verified.</div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="between">
+    <h2 style="margin:0;">{{ 'Final standings' if ck.phase=='ended' else 'Live standings' }}</h2>
+    <div style="text-align:right;">
+      {% if ck.phase == 'live' %}
+        <span class="pill live">Live</span> <span class="bigclock" data-cd="clock">--:--</span>
+      {% elif ck.phase == 'scheduled' %}
+        <span class="pill scheduled">Starts in</span> <span class="bigclock" data-cd="clock">--:--</span>
+      {% elif ck.phase == 'paused' %}
+        <span class="pill paused">Paused</span> <span class="bigclock" data-cd="clock">--:--</span>
+      {% elif ck.phase == 'ended' %}
+        <span class="pill ended">Closed</span>
+      {% else %}
+        <span class="pill waiting">Not started</span>
+      {% endif %}
+    </div>
+  </div>
+  {% if ck.phase == 'scheduled' %}<p class="muted">Opens {{ ck.start_text }} for {{ ck.minutes }} minutes.</p>{% endif %}
+  {% if ck.phase == 'waiting' %}<p class="muted">The competition has not started yet.</p>{% endif %}
+  <table>
+    <tr><th>#</th><th>Team</th><th>Side</th><th>Points</th></tr>
+    {% for s in scores %}
+    <tr class="{{ 'lead' if loop.first and s.points > 0 }}">
+      <td class="rank">{{ loop.index }}</td>
+      <td>{{ s.name }}</td>
+      <td class="{{ s.side }}">{{ s.side|upper }}</td>
+      <td class="pts">{{ s.points }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">No teams registered yet.</td></tr>
+    {% endfor %}
+  </table>
+  <p class="muted" style="margin-top:14px;">Updates by itself. Put this page on the room screen.</p>
+</div>
+
+<div class="card">
+  <h2>Weaknesses and values</h2>
+  <table>
+    <tr><th>Weakness</th><th>Points</th></tr>
+    {% for key, label in labels.items() %}
+    <tr><td>{{ label }}</td><td class="pts">{{ points[key] }}</td></tr>
+    {% endfor %}
+  </table>
+  <p class="muted">Red scores by capturing the flag. Blue scores the same value with a verified fix report.</p>
+</div>
+{% endblock %}

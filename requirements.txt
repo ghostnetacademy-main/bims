@@ -1,0 +1,2 @@
+# Both apps need only Flask; everything else is Python's standard library.
+Flask==3.0.3

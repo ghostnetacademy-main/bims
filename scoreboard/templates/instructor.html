@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Admin · {{ ck.event_title }}{% endblock %}
+{% block css %}
+    .actions form { display:inline-block; margin:0 6px 8px 0; }
+    .actions input[type=number] { width:74px; display:inline-block; padding:8px; }
+    .kv { display:grid; grid-template-columns:150px 1fr; gap:6px 14px; font-size:14.5px; margin-top:10px; }
+    .kv div:nth-child(odd) { color:var(--muted); }
+{% endblock %}
+{% block body %}
+<div class="card">
+  <div class="between">
+    <h2 style="margin:0;">Competition clock</h2>
+    <form method="post" action="{{ url_for('admin_logout') }}" style="margin:0;">
+      <input type="hidden" name="csrf" value="{{ csrf() }}">
+      <button type="submit" class="btn grey small">Sign out of admin</button>
+    </form>
+  </div>
+  <div class="kv">
+    <div>Status</div>
+    <div><span class="pill {{ ck.phase }}">{{ {'waiting':'Not started','scheduled':'Scheduled','live':'Live','paused':'Paused','ended':'Ended'}[ck.phase] }}</span>
+      {% if ck.phase in ('live','scheduled','paused') %}<span class="timer" data-cd="clock">--:--</span>
+        <span class="muted">{{ 'left' if ck.phase != 'scheduled' else 'until start' }}</span>{% endif %}</div>
+    <div>Opens</div><div>{{ ck.start_text or 'not set' }}</div>
+    <div>Closes</div><div>{{ ck.end_text if ck.start and ck.phase != 'paused' else ('when resumed' if ck.phase == 'paused' else 'not set') }}</div>
+    <div>Length</div><div>{{ ck.minutes }} minutes</div>
+    <div>Open to</div><div>{{ ck.mode_label }}</div>
+    <div>This machine's time</div><div>{{ server_time }} {{ tz_name }} <span class="muted">(the official clock; check it is right)</span></div>
+  </div>
+
+  <h3>Live controls</h3>
+  <div class="actions">
+    <form method="post" action="{{ url_for('admin_clock', action='start') }}"
+          onsubmit="return confirm('Start the competition now?');">
+      <input type="hidden" name="csrf" value="{{ csrf() }}">
+      <input type="number" name="minutes" value="{{ ck.planned }}" min="1" max="600" aria-label="Minutes">
+      <button type="submit">Start now</button>
+    </form>
+    <form method="post" action="{{ url_for('admin_clock', action='pause') }}">
+      <input type="hidden" name="csrf" value="{{ csrf() }}">
+      <button type="submit" class="btn amber" {{ 'disabled' if ck.phase != 'live' }}>Pause</button>
+    </form>
+    <form method="post" action="{{ url_for('admin_clock', action='resume') }}">
+      <input type="hidden" name="csrf" value="{{ csrf() }}">
+      <button type="submit" class="btn amber" {{ 'disabled' if ck.phase != 'paused' }}>Resume</button>
+    </form>
+    <form method="post" action="{{ url_for('admin_clock', action='extend') }}">
+      <input type="hidden" name="csrf" value="{{ csrf() }}">
+      <input type="number" name="minutes" value="5" min="1" max="120" aria-label="Extra minutes">
+      <button type="submit" class="btn grey" {{ 'disabled' if ck.phase not in ('live','paused','ended') }}>Add minutes</button>
+    </form>
+    <form method="post" action="{{ url_for('admin_clock', action='end') }}"
+          onsubmit="return confirm('End the competition now and close submissions?');">
+      <input type="hidden" name="csrf" value="{{ csrf() }}">
+      <button type="submit" class="btn redbtn" {{ 'disabled' if ck.phase not in ('live','paused') }}>End now</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Schedule and settings</h2>
+  <p class="muted">Set the date and time and the competition opens by itself. Leave date and time empty to save the other settings only.</p>
+  <form method="post" action="{{ url_for('admin_schedule') }}">
+    <input type="hidden" name="csrf" value="{{ csrf() }}">
+    <div class="row">
+      <div><label for="date">Start date</label><input id="date" type="date" name="date" value="{{ form_date }}"></div>
+      <div><label for="time">Start time</label><input id="time" type="time" name="time" value="{{ form_time }}"></div>
+      <div><label for="minutes">Length (minutes)</label><input id="minutes" type="number" name="minutes" value="{{ ck.planned }}" min="1" max="600"></div>
+      <div><label for="mode">Open to</label>
+        <select id="mode" name="mode">
+          {% for num, label in modes.items() %}<option value="{{ num }}" {{ 'selected' if ck.mode == num }}>{{ label }}</option>{% endfor %}
+        </select></div>
+    </div>
+    <div class="row">
+      <div><label for="event_title">Event title</label><input id="event_title" type="text" name="event_title" value="{{ ck.event_title }}" maxlength="80"></div>
+      <div><label for="target_url">Target address shown to players</label><input id="target_url" type="text" name="target_url" value="{{ ck.target_url }}" placeholder="http://10.10.10.10" maxlength="120"></div>
+    </div>
+    <div style="margin-top:16px;"><button type="submit">Save schedule</button></div>
+  </form>
+  <form method="post" action="{{ url_for('admin_clock', action='clear') }}" style="margin-top:10px;"
+        onsubmit="return confirm('Clear the schedule and go back to Not started?');">
+    <input type="hidden" name="csrf" value="{{ csrf() }}">
+    <button type="submit" class="btn grey small">Clear schedule</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Blue team fix reports</h2>
+  <table>
+    <tr><th>Team</th><th>Weakness</th><th>Report</th><th>Pts</th><th>Status</th><th>Action</th></tr>
+    {% for p in reports %}
+    <tr>
+      <td class="{{ p['side'] }}">{{ p['name'] }}</td>
+      <td>{{ labels[p['vuln']] }}</td>
+      <td style="max-width:340px; white-space:pre-wrap; word-break:break-word;">{{ p['report'] }}</td>
+      <td class="pts">{{ p['points'] }}</td>
+      <td>
+        {% if p['status']=='verified' %}<span class="done">verified</span>
+        {% elif p['status']=='pending' %}<span class="pending">pending</span>
+        {% else %}<span class="rej">rejected</span>{% endif %}
+      </td>
+      <td style="white-space:nowrap;">
+        <form method="post" action="{{ url_for('admin_verify', pid=p['id'], decision='approve') }}" style="display:inline;">
+          <input type="hidden" name="csrf" value="{{ csrf() }}">
+          <button type="submit" class="btn small">Approve</button>
+        </form>
+        <form method="post" action="{{ url_for('admin_verify', pid=p['id'], decision='reject') }}" style="display:inline;">
+          <input type="hidden" name="csrf" value="{{ csrf() }}">
+          <button type="submit" class="btn redbtn small">Reject</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="muted">No reports filed yet.</td></tr>
+    {% endfor %}
+  </table>
+  <p class="muted" style="margin-top:10px;">You can verify reports after time is up; the winner screen says results are provisional until none are pending.</p>
+</div>
+
+<div class="card">
+  <h2>Teams ({{ teams|length }})</h2>
+  <table>
+    <tr><th>Team</th><th>Side</th><th>Points</th><th>Reset team password</th></tr>
+    {% for t in teams %}
+    <tr>
+      <td>{{ t['name'] }}</td>
+      <td class="{{ t['side'] }}">{{ t['side']|upper }}</td>
+      <td class="pts">{% for s in scores if s.name == t['name'] %}{{ s.points }}{% endfor %}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin_team_password', tid=t['id']) }}" style="display:flex; gap:8px;" autocomplete="off">
+          <input type="hidden" name="csrf" value="{{ csrf() }}">
+          <input type="password" name="password" minlength="6" placeholder="new password" style="max-width:190px;" autocomplete="new-password">
+          <button type="submit" class="btn grey small">Set</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">No teams registered yet.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Reset</h2>
+  <p class="muted">For a rerun with fresh flags, also run <code>mac/round.sh</code> on this machine: it rotates the flags and re-seeds the target.</p>
+  <form method="post" action="{{ url_for('admin_reset', what='scores') }}" style="display:inline;"
+        onsubmit="return confirm('Clear all scores? Teams and schedule are kept.');">
+    <input type="hidden" name="csrf" value="{{ csrf() }}">
+    <button type="submit" class="btn grey">Clear scores (keep teams and schedule)</button>
+  </form>
+  <form method="post" action="{{ url_for('admin_reset', what='all') }}" style="display:inline;"
+        onsubmit="return confirm('Wipe ALL teams, scores and the schedule?');">
+    <input type="hidden" name="csrf" value="{{ csrf() }}">
+    <button type="submit" class="btn redbtn">Full reset</button>
+  </form>
+</div>
+{% endblock %}

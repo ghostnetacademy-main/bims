@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sign in · {{ ck.event_title }}{% endblock %}
+{% block body %}
+<div class="card" style="max-width:440px; margin-left:auto; margin-right:auto;">
+  <h2>Team sign-in</h2>
+  <p class="muted">Use the team name and password your team registered with.</p>
+  <form method="post" autocomplete="off">
+    <label for="name">Team name</label>
+    <input id="name" type="text" name="name" maxlength="40" required>
+    <label for="password">Team password</label>
+    <input id="password" type="password" name="password" maxlength="128" required>
+    <div style="margin-top:18px;"><button type="submit">Sign in</button></div>
+  </form>
+  <p class="muted" style="margin-top:16px;">No team yet? <a href="{{ url_for('register') }}">Register one</a>.
+     Forgot the password? Ask the instructor to reset it.</p>
+</div>
+{% endblock %}

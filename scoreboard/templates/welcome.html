@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block css %}
+    .hero { text-align:center; padding:38px 24px 34px;
+            background:radial-gradient(ellipse at top, #1b2552 0%, var(--panel) 62%); }
+    .kicker { display:inline-block; border:1px solid #3b4a86; color:#b9c6ff; border-radius:20px;
+              padding:5px 14px; font-size:12px; letter-spacing:1.4px; text-transform:uppercase; }
+    .hero h1 { font-size:38px; margin:16px 0 10px;
+               background:linear-gradient(90deg,#ff8f8f,#b9a3ff 50%,#7fc0ff);
+               -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .hero p.lead { max-width:640px; margin:0 auto; color:#c9d2ee; font-size:16px; }
+    .status { margin-top:26px; font-size:17px; font-weight:600; }
+    .blocks { display:flex; justify-content:center; gap:12px; margin:16px 0 6px; flex-wrap:wrap; }
+    .block { background:#0e1530; border:1px solid #2c3a6e; border-radius:12px; min-width:92px; padding:14px 10px 10px; }
+    .block b { display:block; font-size:38px; line-height:1; color:#8fd0ff; font-family:ui-monospace,Menlo,Consolas,monospace; }
+    .block span { display:block; margin-top:8px; font-size:11px; letter-spacing:1.6px; color:var(--muted); }
+    .target { display:inline-block; margin-top:16px; padding:9px 16px; border-radius:8px; background:#0e1530;
+              border:1px dashed #3b4a86; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:15px; color:var(--gold); }
+    .cta { margin-top:22px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .sides { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px; }
+    .side { border-radius:12px; padding:22px; border:1px solid var(--line); background:var(--panel); }
+    .side.r { border-top:4px solid var(--red); } .side.b { border-top:4px solid var(--blue); }
+    .side h3 { margin:0 0 4px; font-size:22px; }
+    .side ul { padding-left:18px; margin:12px 0 18px; color:#c9d2ee; font-size:14.5px; }
+    .side li { margin-bottom:5px; }
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:14px; }
+    .step { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:14px; }
+    .step .n { width:28px; height:28px; border-radius:50%; background:#26336a; color:#cfd8ff; display:grid;
+               place-items:center; font-weight:800; font-size:13px; margin-bottom:10px; }
+    .step b { display:block; font-size:15px; margin-bottom:6px; }
+    .step small { display:block; color:var(--muted); font-size:13px; margin-top:6px; }
+    .step small i { font-style:normal; font-weight:700; }
+    .rules li { margin-bottom:7px; }
+    @media (max-width:760px) { .sides { grid-template-columns:1fr; } .steps { grid-template-columns:1fr 1fr; } .hero h1 { font-size:29px; } }
+{% endblock %}
+{% block body %}
+<div class="card hero">
+  <span class="kicker">Afternoon challenge · Red team vs Blue team</span>
+  <h1>{{ ck.event_title }}</h1>
+  <p class="lead">Barangay Malinaw has asked your team to test and secure its Information
+     Management System before it goes live. Use what you practised this morning on
+     ghostnetacademy.com. You have {{ ck.minutes if ck.phase in ('live','scheduled') else ck.planned }} minutes.</p>
+
+  {% if ck.phase == 'waiting' %}
+    <div class="status"><span class="pill waiting">Not started</span></div>
+    <p class="muted" style="margin-top:10px;">The competition has not started yet. Register your team now and wait for the instructor.</p>
+  {% elif ck.phase == 'scheduled' %}
+    <div class="status"><span class="pill scheduled">Starts in</span></div>
+    <div class="blocks">
+      <div class="block" data-cd-hide-zero="d"><b data-cd-part="d">0</b><span>DAYS</span></div>
+      <div class="block"><b data-cd-part="h">00</b><span>HOURS</span></div>
+      <div class="block"><b data-cd-part="m">00</b><span>MINUTES</span></div>
+      <div class="block"><b data-cd-part="s">00</b><span>SECONDS</span></div>
+    </div>
+    <p class="muted">Opens {{ ck.start_text }} · runs for {{ ck.minutes }} minutes · the competition has not started yet</p>
+  {% elif ck.phase == 'live' %}
+    <div class="status"><span class="pill live">Live now</span></div>
+    <div class="blocks">
+      <div class="block" data-cd-hide-zero="h"><b data-cd-part="h">00</b><span>HOURS</span></div>
+      <div class="block"><b data-cd-part="m">00</b><span>MINUTES</span></div>
+      <div class="block"><b data-cd-part="s">00</b><span>SECONDS</span></div>
+    </div>
+    <p class="muted">Time left · closes {{ ck.end_text }} · open to {{ ck.mode_label }}</p>
+  {% elif ck.phase == 'paused' %}
+    <div class="status"><span class="pill paused">Paused</span></div>
+    <p class="muted" style="margin-top:10px;">Hands off the keyboard. <span class="timer" data-cd="clock">--:--</span> will remain when the instructor resumes.</p>
+  {% else %}
+    <div class="status"><span class="pill ended">Time is up</span></div>
+    <p class="muted" style="margin-top:10px;">Submissions are closed. See who won on the standings page.</p>
+  {% endif %}
+
+  {% if ck.target_url %}<div><span class="target">Target: {{ ck.target_url }}</span></div>{% endif %}
+
+  <div class="cta">
+    {% if me %}
+      <a class="btn" href="{{ url_for('play') }}">Go to my team: {{ me['name'] }}</a>
+    {% else %}
+      <a class="btn" href="#sides">Choose your side</a>
+      <a class="btn grey" href="{{ url_for('login') }}">Sign in to my team</a>
+    {% endif %}
+    <a class="btn grey" href="{{ url_for('scoreboard') }}">{{ 'See the results' if ck.phase=='ended' else 'Live standings' }}</a>
+  </div>
+</div>
+
+<div class="sides" id="sides">
+  <div class="side r">
+    <h3 class="red">Red team</h3>
+    <div class="muted">Attack. Think like the intruder.</div>
+    <ul>
+      <li>Explore the target and find its weak points.</li>
+      <li>Prove each weakness by capturing its flag.</li>
+      <li>Submit the flag here to score.</li>
+    </ul>
+    {% if not me %}<a class="btn redbtn" href="{{ url_for('register', side='red') }}">Join as Red</a>{% endif %}
+  </div>
+  <div class="side b">
+    <h3 class="blue">Blue team</h3>
+    <div class="muted">Defend. Think like the system owner.</div>
+    <ul>
+      <li>Review the same system for what is exposed.</li>
+      <li>Work out how each weakness should be fixed.</li>
+      <li>File a fix report; the instructor verifies it.</li>
+    </ul>
+    {% if not me %}<a class="btn bluebtn" href="{{ url_for('register', side='blue') }}">Join as Blue</a>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Your mission path</h2>
+  <p class="muted">The same four steps you practised in the morning session, now on a system that looks like your own.</p>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><b>Recon and scan</b>
+      Learn what the system is and what it shows to the network.
+      <small><i class="red">Red</i> map the target · <i class="blue">Blue</i> list what is exposed</small></div>
+    <div class="step"><div class="n">2</div><b>Find the weakness</b>
+      Check it against the OWASP Top 10 web risks.
+      <small><i class="red">Red</i> pick a way in · <i class="blue">Blue</i> name the risk</small></div>
+    <div class="step"><div class="n">3</div><b>Act</b>
+      Turn the finding into a result.
+      <small><i class="red">Red</i> exploit it · <i class="blue">Blue</i> design the patch</small></div>
+    <div class="step"><div class="n">4</div><b>Report</b>
+      Nothing counts until it is reported.
+      <small><i class="red">Red</i> submit the flag · <i class="blue">Blue</i> file the fix report</small></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Rules of engagement</h2>
+  <ul class="rules">
+    <li><b>Only the target is in scope</b>{% if ck.target_url %}: <code>{{ ck.target_url }}</code>{% endif %}. Nothing else on this network.</li>
+    <li>This scoreboard, the instructor's machine, other teams' laptops and the venue network are off limits.</li>
+    <li>Do not break the target for everyone else: no deleting data, no flooding it with traffic.</li>
+    <li>Every name and record on the target is invented. Use these skills only on systems you are authorised to test.</li>
+    <li>The clock on this page is the official one. When it reaches zero, submissions close by themselves.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>What is worth what</h2>
+  <table>
+    <tr><th>Weakness to find</th><th>Points</th></tr>
+    {% for key, label in labels.items() %}
+    <tr><td>{{ label }}</td><td class="pts">{{ points[key] }}</td></tr>
+    {% endfor %}
+    <tr><td class="muted">Maximum per team</td><td class="pts">{{ total }}</td></tr>
+  </table>
+  <p class="muted" style="margin-top:12px;">Red scores a weakness by capturing its flag. Blue scores the same value with a verified fix report.
+     Highest score wins; a tie goes to the team that reached its score first.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ team['name'] }} · {{ ck.event_title }}{% endblock %}
+{% block body %}
+<div class="card">
+  <div class="between">
+    <div>
+      <h2 style="margin:0;">{{ team['name'] }} <span class="{{ team['side'] }}">({{ team['side']|upper }})</span></h2>
+      <div class="muted">Team score: <b class="pts" style="color:var(--text);">{{ my_points }}</b></div>
+    </div>
+    <div style="text-align:right;">
+      {% if ck.phase == 'live' %}<span class="pill live">Live</span> <span class="timer" data-cd="clock">--:--</span>
+      {% elif ck.phase == 'scheduled' %}<span class="pill scheduled">Starts in</span> <span class="timer" data-cd="clock">--:--</span>
+      {% elif ck.phase == 'paused' %}<span class="pill paused">Paused</span> <span class="timer" data-cd="clock">--:--</span>
+      {% elif ck.phase == 'ended' %}<span class="pill ended">Closed</span>
+      {% else %}<span class="pill waiting">Not started</span>{% endif %}
+    </div>
+  </div>
+  {% if ck.target_url %}<p style="margin:12px 0 0;">Target: <code>{{ ck.target_url }}</code></p>{% endif %}
+  {% if not open_for_me %}<div class="notice">{{ closed_reason }}
+    {% if ck.phase == 'ended' %}<a href="{{ url_for('scoreboard') }}">See the results</a>.{% endif %}</div>{% endif %}
+</div>
+
+{% if team['side'] == 'red' %}
+<div class="card">
+  <h2>Submit a captured flag</h2>
+  <p class="muted">Flags look like <code>FLAG{...}</code>. Copy the whole thing, braces included.</p>
+  <form method="post" action="{{ url_for('submit_flag') }}" autocomplete="off">
+    <label for="flag">Flag</label>
+    <input id="flag" type="text" name="flag" placeholder="FLAG{...}" maxlength="200" {{ 'disabled' if not open_for_me }}>
+    <div style="margin-top:14px;">
+      <button type="submit" {{ 'disabled' if not open_for_me }}>Submit flag</button>
+    </div>
+  </form>
+  <h3>Your captures</h3>
+  <table>
+    <tr><th>Weakness</th><th>Points</th><th>Status</th></tr>
+    {% for key, label in labels.items() %}
+    <tr>
+      <td>{{ label }}</td>
+      <td class="pts">{{ points[key] }}</td>
+      <td>{% if key in captures %}<span class="done">scored</span>{% else %}<span class="muted">not yet</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% else %}
+<div class="card">
+  <h2>File a fix report</h2>
+  <p class="muted">One report per weakness. Say what is wrong, why it matters, and exactly how you would fix it. The instructor reads and verifies each one.</p>
+  <form method="post" action="{{ url_for('submit_patch') }}">
+    <label for="vuln">Which weakness is this report about?</label>
+    <select id="vuln" name="vuln" {{ 'disabled' if not open_for_me }}>
+      {% for key, label in labels.items() %}
+      <option value="{{ key }}">{{ label }} ({{ points[key] }} pts)</option>
+      {% endfor %}
+    </select>
+    <label for="report">Report</label>
+    <textarea id="report" name="report" rows="6" maxlength="2000" data-keep
+      placeholder="Where the weakness is, what an intruder could reach through it, and the fix you recommend." {{ 'disabled' if not open_for_me }}></textarea>
+    <div style="margin-top:14px;">
+      <button type="submit" {{ 'disabled' if not open_for_me }}>File report</button>
+    </div>
+  </form>
+  <h3>Your reports</h3>
+  <table>
+    <tr><th>Weakness</th><th>Points</th><th>Status</th></tr>
+    {% for key, label in labels.items() %}
+    <tr>
+      <td>{{ label }}</td>
+      <td class="pts">{{ points[key] }}</td>
+      <td>
+        {% if key in patches %}
+          {% set st = patches[key]['status'] %}
+          {% if st == 'verified' %}<span class="done">verified</span>
+          {% elif st == 'pending' %}<span class="pending">waiting for instructor</span>
+          {% else %}<span class="rej">rejected</span>{% endif %}
+        {% else %}<span class="muted">not filed</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

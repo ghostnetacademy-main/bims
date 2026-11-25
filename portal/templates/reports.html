@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card">
+  <h2>Data Import &amp; Reports</h2>
+  <p class="muted">Upload a resident import script or report generator (<code>.py</code>) and process it.
+     Internal tool for the barangay encoder.</p>
+  {% if message %}<div class="error" style="background:#e8f5ec;color:#0b3d2e">{{ message }}</div>{% endif %}
+  <form method="post" enctype="multipart/form-data" action="{{ url_for('reports') }}" style="margin-top:10px">
+    <input type="file" name="report">
+    <div style="margin-top:12px"><button type="submit">Upload</button></div>
+  </form>
+
+  <h2 style="font-size:16px;margin-top:20px">Uploaded files</h2>
+  {% if uploaded %}
+  <table>
+    <tr><th>File</th><th></th></tr>
+    {% for f in uploaded %}<tr><td>{{ f }}</td><td><a class="rowlink" href="{{ url_for('run_report', name=f) }}" target="_blank">Process</a></td></tr>{% endfor %}
+  </table>
+  {% else %}<p class="muted">No files uploaded yet.</p>{% endif %}
+</div>
+{% endblock %}

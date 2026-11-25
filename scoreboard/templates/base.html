@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ ck.event_title }}{% endblock %}</title>
+  <style>
+    :root {
+      --bg:#0b1020; --panel:#131a2e; --panel2:#0f1528; --line:#263154; --text:#e8ecf8;
+      --muted:#93a0c2; --red:#ff6b6b; --blue:#5aa9ff; --gold:#f2c14e; --green:#3ecf8e;
+      --amber:#f0a93b; --accent:#7c8cff;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Segoe UI",system-ui,-apple-system,sans-serif; background:var(--bg);
+           color:var(--text); line-height:1.5; }
+    a { color:var(--blue); }
+    header.top { background:#0d1326; border-bottom:1px solid var(--line); padding:12px 24px;
+                 display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+    .brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
+    .brand .mark { width:30px; height:30px; border-radius:8px; display:grid; place-items:center;
+                   background:linear-gradient(135deg,var(--red),var(--blue)); font-weight:800; font-size:13px; color:#0b1020; }
+    .brand b { font-size:15px; letter-spacing:.3px; }
+    nav { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+    nav a, nav button.link { color:var(--muted); text-decoration:none; font-size:14px; padding:7px 11px;
+                             border-radius:6px; background:none; border:0; cursor:pointer; font-family:inherit; }
+    nav a:hover, nav button.link:hover { color:var(--text); background:#1a2340; }
+    nav a.on { color:var(--text); background:#1a2340; }
+    nav form { display:inline; margin:0; }
+    .topclock { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:14px; color:var(--gold);
+                padding:5px 10px; border:1px solid var(--line); border-radius:6px; margin-left:8px; }
+    main { max-width:980px; margin:26px auto 60px; padding:0 18px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:22px 24px; margin-bottom:18px; }
+    h1,h2,h3 { line-height:1.2; }
+    h2 { margin:0 0 6px; font-size:21px; }
+    h3 { margin:20px 0 8px; font-size:16px; }
+    .muted { color:var(--muted); font-size:13.5px; }
+    .pill { display:inline-block; padding:4px 12px; border-radius:20px; font-size:12.5px; font-weight:700;
+            letter-spacing:.4px; text-transform:uppercase; }
+    .pill.waiting   { background:#2a3352; color:#c3cdea; }
+    .pill.scheduled { background:#1d3a66; color:#bcd9ff; }
+    .pill.live      { background:#14553b; color:#b6f3d6; }
+    .pill.paused    { background:#5c4212; color:#ffdf9e; }
+    .pill.ended     { background:#5c1f24; color:#ffc4c4; }
+    .timer { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:16px; color:var(--gold); }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th,td { padding:10px 12px; text-align:left; border-bottom:1px solid #1d2644; font-size:14.5px; vertical-align:top; }
+    th { color:var(--muted); font-weight:600; font-size:13px; }
+    .red  { color:var(--red); font-weight:700; }
+    .blue { color:var(--blue); font-weight:700; }
+    .pts { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:16px; }
+    label { display:block; font-size:13px; color:var(--muted); margin:12px 0 5px; }
+    input[type=text], input[type=password], input[type=date], input[type=time], input[type=number],
+    textarea, select { width:100%; padding:10px 11px; background:var(--panel2); color:var(--text);
+        border:1px solid var(--line); border-radius:8px; font-size:14.5px; font-family:inherit; color-scheme:dark; }
+    input:focus, textarea:focus, select:focus { outline:2px solid var(--accent); outline-offset:1px; }
+    input:disabled, textarea:disabled, select:disabled { opacity:.5; }
+    button, .btn { background:var(--green); color:#062016; border:0; padding:10px 18px; border-radius:8px;
+        font-size:14.5px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-block; font-family:inherit; }
+    button:hover, .btn:hover { filter:brightness(1.08); }
+    button:disabled { opacity:.45; cursor:not-allowed; filter:none; }
+    .btn.redbtn  { background:var(--red);  color:#2a0707; }
+    .btn.bluebtn { background:var(--blue); color:#06203d; }
+    .btn.grey    { background:#2a3352; color:var(--text); }
+    .btn.amber   { background:var(--amber); color:#2c1a00; }
+    .btn.small   { padding:6px 12px; font-size:13px; }
+    .flash { background:#1b2a55; border:1px solid #3a56b0; padding:11px 14px; border-radius:8px;
+             font-size:14.5px; margin-bottom:14px; }
+    .notice { background:#3a2a0c; border:1px solid #7a5a16; color:#ffe2a6; padding:11px 14px;
+              border-radius:8px; font-size:14.5px; margin-top:14px; }
+    .done { color:var(--green); } .pending { color:var(--amber); } .rej { color:var(--red); }
+    code { background:var(--panel2); padding:2px 6px; border-radius:5px; font-size:13.5px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+    .row > div { flex:1; min-width:150px; }
+    .between { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    footer { text-align:center; color:#5d6a8f; font-size:12px; padding:0 18px 30px; }
+    {% block css %}{% endblock %}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{{ url_for('welcome') }}">
+      <span class="mark">CTF</span><b>Attack-Defense Scoreboard</b>
+    </a>
+    <nav>
+      <a href="{{ url_for('welcome') }}" class="{{ 'on' if request.endpoint=='welcome' }}">Welcome</a>
+      <a href="{{ url_for('scoreboard') }}" class="{{ 'on' if request.endpoint=='scoreboard' }}">Standings</a>
+      {% if me %}
+        <a href="{{ url_for('play') }}" class="{{ 'on' if request.endpoint=='play' }}">My Team</a>
+        <form method="post" action="{{ url_for('logout') }}"><button class="link" type="submit">Sign out</button></form>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="{{ 'on' if request.endpoint=='login' }}">Sign in</a>
+        <a href="{{ url_for('register') }}" class="{{ 'on' if request.endpoint=='register' }}">Register</a>
+      {% endif %}
+      {% if admin %}<a href="{{ url_for('admin_panel') }}" class="{{ 'on' if request.endpoint=='admin_panel' }}">Admin</a>{% endif %}
+      {% if ck.phase in ('live','scheduled') %}
+        <span class="topclock" title="{{ 'Time left' if ck.phase=='live' else 'Starts in' }}">{{ 'LEFT' if ck.phase=='live' else 'STARTS' }} <span data-cd="clock">--:--</span></span>
+      {% elif ck.phase == 'paused' %}
+        <span class="topclock">PAUSED <span data-cd="clock">--:--</span></span>
+      {% endif %}
+    </nav>
+  </header>
+  <main>
+    {% with msgs = get_flashed_messages() %}
+      {% for m in msgs %}<div class="flash">{{ m }}</div>{% endfor %}
+    {% endwith %}
+    {% block body %}{% endblock %}
+  </main>
+  <footer>{{ ck.event_title }} · training range · all data on the target is fictional</footer>
+
+  <script>
+  (function () {
+    // The scoreboard machine's clock is the only one that counts. We measure
+    // the difference to this laptop's clock once, then count down locally.
+    var CTF = { now: {{ ck.now }}, target: {{ ck.target }}, remaining: {{ ck.remaining }},
+                phase: "{{ ck.phase }}", clock: "{{ ck.version }}",
+                board: {{ (page_version or '')|tojson }} };
+    var skew = CTF.now * 1000 - Date.now();
+    var reloading = false;
+
+    function left() {
+      if (!CTF.target) return CTF.remaining;
+      return Math.max(0, Math.round((CTF.target * 1000 - (Date.now() + skew)) / 1000));
+    }
+    function two(n) { return (n < 10 ? "0" : "") + n; }
+    function reload() { if (!reloading) { reloading = true; location.reload(); } }
+
+    function paint() {
+      var s = left(), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600),
+          m = Math.floor((s % 3600) / 60), sec = s % 60;
+      var text = d > 0 ? d + "d " + two(h) + ":" + two(m) + ":" + two(sec)
+               : h > 0 ? h + ":" + two(m) + ":" + two(sec) : two(m) + ":" + two(sec);
+      document.querySelectorAll("[data-cd='clock']").forEach(function (el) { el.textContent = text; });
+      var parts = { d: d, h: two(h), m: two(m), s: two(sec) };
+      document.querySelectorAll("[data-cd-part]").forEach(function (el) {
+        el.textContent = parts[el.getAttribute("data-cd-part")];
+      });
+      document.querySelectorAll("[data-cd-hide-zero]").forEach(function (el) {
+        el.style.display = (el.getAttribute("data-cd-hide-zero") === "d" ? d : h + d) > 0 ? "" : "none";
+      });
+      // Clock ran out on a live boundary: ask the server what happens next.
+      if (CTF.target && s <= 0) setTimeout(reload, 1200);
+    }
+    paint();
+    setInterval(paint, 500);
+
+    function typing() {
+      var el = document.querySelector("[data-keep]");
+      return !!(el && el.value && el.value.trim().length);
+    }
+    function poll() {
+      fetch("{{ url_for('api_status') }}", { cache: "no-store" })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          skew = d.now * 1000 - Date.now();
+          if (d.clock !== CTF.clock) {
+            // Time was extended while someone is mid-report: keep their text.
+            if (typing() && d.phase === "live" && CTF.phase === "live") {
+              CTF.clock = d.clock; CTF.target = d.target; CTF.remaining = d.remaining;
+            } else { reload(); }
+          } else if (CTF.board && d.board !== CTF.board) { reload(); }
+        })
+        .catch(function () { /* network blip: keep counting locally */ });
+    }
+    setInterval(poll, 5000);
+  })();
+  </script>
+</body>
+</html>

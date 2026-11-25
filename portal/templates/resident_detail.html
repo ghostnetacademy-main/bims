@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card">
+  <a href="{{ url_for('residents') }}" class="muted">&larr; Back to registry</a>
+  <h2 style="margin-top:8px">{{ r['first_name'] }} {{ r['middle_name'] }} {{ r['last_name'] }}</h2>
+  <p class="muted">Resident ID #{{ r['id'] }}</p>
+  <table style="max-width:620px">
+    <tr><th>Sex</th><td>{{ r['sex'] }}</td></tr>
+    <tr><th>Birthdate</th><td>{{ r['birthdate'] }}</td></tr>
+    <tr><th>Civil status</th><td>{{ r['civil_status'] }}</td></tr>
+    <tr><th>Purok</th><td>{{ r['purok'] }}</td></tr>
+    <tr><th>Occupation</th><td>{{ r['occupation'] }}</td></tr>
+    <tr><th>Contact no.</th><td>{{ r['contact_no'] }}</td></tr>
+    <tr><th>PhilSys no.</th><td>{{ r['philsys_no'] }}</td></tr>
+    <tr><th>Registered voter</th><td>{{ 'Yes' if r['voter'] else 'No' }}</td></tr>
+    <tr><th>Senior citizen</th><td>{{ 'Yes' if r['senior'] else 'No' }}</td></tr>
+    <tr><th>PWD</th><td>{{ 'Yes' if r['pwd'] else 'No' }}</td></tr>
+    {% if hh %}<tr><th>Household</th><td>{{ hh['household_no'] }} — {{ hh['address'] }}</td></tr>{% endif %}
+  </table>
+</div>
+{% endblock %}

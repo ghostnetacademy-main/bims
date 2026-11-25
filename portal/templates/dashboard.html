@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block body %}
+{% if captured %}
+<div class="flag">🚩 Captured ({{ captured[0] }}): {{ captured[1] }} &nbsp;—&nbsp; submit this on the scoreboard.</div>
+{% endif %}
+
+<div class="card">
+  <h2>Dashboard</h2>
+  <p class="muted">Welcome, {{ cur_user }}. Overview of {{ brgy }} records as of this session.</p>
+  <div class="grid" style="margin-top:14px">
+    <div class="stat"><div class="n">{{ s.residents }}</div><div class="l">Registered residents</div></div>
+    <div class="stat"><div class="n">{{ s.households }}</div><div class="l">Households</div></div>
+    <div class="stat"><div class="n">{{ s.voters }}</div><div class="l">Registered voters</div></div>
+    <div class="stat"><div class="n">{{ s.seniors }}</div><div class="l">Senior citizens</div></div>
+    <div class="stat"><div class="n">{{ s.pwd }}</div><div class="l">PWD</div></div>
+    <div class="stat"><div class="n">{{ s.businesses }}</div><div class="l">Registered businesses</div></div>
+    <div class="stat"><div class="n">{{ s.certs }}</div><div class="l">Certificates issued</div></div>
+    <div class="stat"><div class="n">{{ s.blotter_open }}</div><div class="l">Open blotter cases</div></div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+  <div class="card">
+    <h2 style="font-size:17px">Recently issued certificates</h2>
+    <table>
+      <tr><th>Resident</th><th>Type</th><th>Date</th></tr>
+      {% for r in recent %}<tr><td>{{ r['resident'] }}</td><td>{{ r['type'] }}</td><td>{{ r['date_issued'] }}</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h2 style="font-size:17px">Barangay officials</h2>
+    <table>
+      {% for o in officials %}<tr><td>{{ o['name'] }}</td><td class="muted">{{ o['position'] }}</td></tr>{% endfor %}
+    </table>
+    <p class="muted" style="margin-top:10px">Full roster under Officials.</p>
+  </div>
+</div>
+{% endblock %}

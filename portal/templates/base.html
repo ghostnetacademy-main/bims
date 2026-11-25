@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ brgy or "Barangay Malinaw" }} — BIMS</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:#eef2f5;color:#1b2733}
+    header{background:#0b3d2e;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px}
+    header .seal{width:40px;height:40px;border-radius:50%;background:#f2c14e;color:#0b3d2e;
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+    header h1{font-size:16px;margin:0;font-weight:700;letter-spacing:.2px}
+    header .sub{font-size:11px;opacity:.82;margin-top:1px}
+    header .spacer{flex:1}
+    header .who{font-size:12px;text-align:right;opacity:.9}
+    nav{background:#0f5138;padding:0 12px;display:flex;flex-wrap:wrap}
+    nav a{color:#d7e9e0;text-decoration:none;font-size:13.5px;padding:10px 13px;border-bottom:3px solid transparent}
+    nav a:hover{color:#fff;background:#0b3d2e}
+    nav a.active{color:#fff;border-bottom-color:#f2c14e}
+    main{max-width:1120px;margin:22px auto;padding:0 18px}
+    .card{background:#fff;border:1px solid #d7dee4;border-radius:8px;padding:18px 20px;margin-bottom:16px}
+    h2{margin:0 0 4px;font-size:20px}
+    .muted{color:#6b7a88;font-size:13px}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+    th,td{text-align:left;padding:7px 9px;border-bottom:1px solid #e9eef2}
+    th{background:#f3f6f8;color:#415260;font-weight:600;position:sticky;top:0}
+    tr:hover td{background:#f7fafb}
+    a.rowlink{color:#0f5138;text-decoration:none;font-weight:600}
+    input[type=text],input[type=password]{width:100%;padding:9px;border:1px solid #c4ccd3;border-radius:6px;font-size:14px}
+    .btn,button{background:#0f5138;color:#fff;border:0;padding:9px 16px;border-radius:6px;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block}
+    .btn:hover,button:hover{background:#0b3d2e}
+    .flag{background:#0b3d2e;color:#f2c14e;padding:13px 15px;border-radius:6px;font-family:monospace;font-size:14px;margin:0 0 16px;word-break:break-all}
+    .pill{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700}
+    .error{background:#fde8e8;color:#9b1c1c;padding:10px 12px;border-radius:6px;font-size:14px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .stat{background:#fff;border:1px solid #dde4ea;border-radius:8px;padding:14px 16px}
+    .stat .n{font-size:28px;font-weight:800;color:#0b3d2e;line-height:1}
+    .stat .l{font-size:12px;color:#6b7a88;margin-top:5px}
+    footer{text-align:center;font-size:11px;color:#8a97a3;padding:18px}
+    .search{display:flex;gap:8px;margin-top:10px;max-width:460px}
+    header a.home{color:#fff;text-decoration:none;display:flex;align-items:center;gap:12px}
+    header a.signin{background:#f2c14e;color:#0b3d2e;font-weight:700;padding:8px 14px;border-radius:6px;text-decoration:none;font-size:13px}
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header>
+    <a class="home" href="{{ url_for('index') }}">
+      <div class="seal">BM</div>
+      <div>
+        <h1>{{ brgy or "Barangay Malinaw" }} — Information Management System</h1>
+        <div class="sub">{{ muni or "Municipality of Bayanihan" }} · Province of Agusan del Norte</div>
+      </div>
+    </a>
+    <div class="spacer"></div>
+    {% if cur_user %}<div class="who">{{ cur_user }}<br><span style="opacity:.7">{{ cur_role }}</span></div>
+    {% elif request.endpoint != 'login' %}<a class="signin" href="{{ url_for('login') }}">Staff Sign-in</a>{% endif %}
+  </header>
+  {% if cur_user %}
+  <nav>
+    <a href="{{ url_for('dashboard') }}" class="{{ 'active' if active=='dashboard' }}">Dashboard</a>
+    <a href="{{ url_for('residents') }}" class="{{ 'active' if active=='residents' }}">Residents</a>
+    <a href="{{ url_for('households') }}" class="{{ 'active' if active=='households' }}">Households</a>
+    <a href="{{ url_for('certificates') }}" class="{{ 'active' if active=='certificates' }}">Certificates</a>
+    <a href="{{ url_for('businesses') }}" class="{{ 'active' if active=='businesses' }}">Businesses</a>
+    <a href="{{ url_for('blotter') }}" class="{{ 'active' if active=='blotter' }}">Blotter</a>
+    <a href="{{ url_for('officials') }}" class="{{ 'active' if active=='officials' }}">Officials</a>
+    <a href="{{ url_for('reports') }}" class="{{ 'active' if active=='reports' }}">Data Import</a>
+    <a href="{{ url_for('system_page') }}" class="{{ 'active' if active=='system' }}">System</a>
+    <a href="{{ url_for('logout') }}" style="margin-left:auto">Logout</a>
+  </nav>
+  {% endif %}
+  <main>{% block body %}{% endblock %}</main>
+  <footer>BIMS v2.3 · {{ brgy or "Barangay Malinaw" }} · Training target — isolated use only. Insecure by design.</footer>
+</body>
+</html>
